@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { generateMealPlan, MealPlanInput } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
         allergies: body.allergies || null,
         cuisine: body.cuisine || null,
         snacks: Boolean(body.snacks),
-        planData: mealPlan,
+        planData: mealPlan as Prisma.InputJsonValue,
       },
     });
 
