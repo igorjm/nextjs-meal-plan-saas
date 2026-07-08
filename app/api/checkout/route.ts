@@ -1,12 +1,20 @@
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { getPriceIdFromType } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   try {
-    const { planType, userId, email } = await request.json();
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!planType || !userId || !email) {
+    const { planType } = await request.json();
+    const userId = clerkUser.id;
+    const email = clerkUser.emailAddresses[0]?.emailAddress;
+
+    if (!planType || !email) {
       return NextResponse.json(
         { error: "Plan type, User ID, and Email are required." },
         { status: 400 }
@@ -30,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
