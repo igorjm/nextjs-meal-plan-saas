@@ -1,7 +1,5 @@
-import React from "react";
+import MealPlanDashboard from "@/components/meal-plan-dashboard";
 
-function MealPlanDashboard() {
-  return <div>MealPlan Page</div>;
+export default function MealPlanPage() {
+  return <MealPlanDashboard />;
 }
-
-export default MealPlanDashboard;
