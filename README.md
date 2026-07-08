@@ -1,103 +1,115 @@
-# AI Meal Plan SaaS
+# MealPlan AI
 
-A full-stack SaaS demo for generating personalized weekly meal plans with AI, user authentication, and Stripe subscriptions.
+Full-stack SaaS portfolio project that turns dietary preferences into a saved weekly meal plan.
+
+Built with **Next.js 15**, **Clerk**, **Stripe**, **Prisma/Neon**, and **OpenRouter**.
+
+---
 
 ## Features
 
-- **Clerk authentication** — sign up, sign in, profile sync
-- **Stripe subscriptions** — weekly, monthly, and yearly plans with webhook activation
-- **AI meal plans** — OpenRouter-powered weekly plans on a calendar view
-- **Profile dashboard** — subscription status and account info
+- **Clerk auth** — sign up, sign in, and profile sync to Postgres
+- **Stripe subscriptions** — weekly / monthly / yearly plans with webhook activation
+- **AI meal plans** — OpenRouter generates a 7-day plan from diet, calories, allergies, and cuisine
+- **Persisted plans** — latest plan is saved per user and loaded on return
+- **Day-by-day UI** — Apple-inspired meal plan dashboard (no cramped calendar tiles)
+- **Profile page** — subscription status and account details
 
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |-------|------------|
 | Framework | Next.js 15 (App Router) |
 | Language | TypeScript |
-| Styling | Tailwind CSS |
+| UI | Tailwind CSS |
 | Auth | Clerk |
-| Database | PostgreSQL + Prisma |
-| Payments | Stripe |
+| Database | PostgreSQL (Neon) + Prisma |
+| Payments | Stripe Checkout + webhooks |
 | AI | OpenRouter |
 | Data fetching | TanStack React Query |
+| Hosting | Vercel |
 
-## Local Development
+## Demo flow
 
-1. Clone and install:
+```
+Landing → Sign up → Subscribe (Stripe) → Webhook activates subscription
+       → Generate meal plan (AI) → Saved plan on /mealplan
+```
 
-   ```bash
-   git clone <your-repo-url>
-   cd nextjs-meal-plan-saas
-   npm install
-   ```
+## Local development
 
-2. Copy environment variables:
+```bash
+git clone https://github.com/igorjm/nextjs-meal-plan-saas.git
+cd nextjs-meal-plan-saas
+npm install
+cp .env.example .env
+```
 
-   ```bash
-   cp .env.example .env.local
-   ```
+Fill `.env` (see [Environment variables](#environment-variables)), then:
 
-3. Fill in `.env.local` with keys from [Clerk](https://clerk.com), [Stripe](https://stripe.com), [OpenRouter](https://openrouter.ai), and a PostgreSQL provider ([Neon](https://neon.tech) works well).
+```bash
+npx prisma migrate deploy
+npm run dev
+```
 
-4. Run database migrations:
+Optional local Stripe webhooks:
 
-   ```bash
-   npx prisma migrate deploy
-   ```
+```bash
+npm run stripe:listen
+```
 
-5. Start the dev server:
+App: [http://localhost:3000](http://localhost:3000)
 
-   ```bash
-   npm run dev
-   ```
+## Environment variables
 
-6. (Optional) Forward Stripe webhooks locally:
-
-   ```bash
-   npm run stripe:listen
-   ```
-
-Visit [http://localhost:3000](http://localhost:3000).
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key |
+| `CLERK_SECRET_KEY` | Clerk secret key |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
+| `DATABASE_URL` | Neon / Postgres connection string |
+| `STRIPE_SECRET_KEY` | Stripe secret (`sk_test_...`) |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_...`) |
+| `STRIPE_PRICE_WEEKLY` | Stripe **Price** ID (`price_...`) |
+| `STRIPE_PRICE_MONTHLY` | Stripe **Price** ID |
+| `STRIPE_PRICE_YEARLY` | Stripe **Price** ID |
+| `OPENROUTER_API_KEY` | OpenRouter API key |
+| `OPENROUTER_MODEL` | e.g. `google/gemini-2.5-flash` |
+| `NEXT_PUBLIC_BASE_URL` | App URL (`http://localhost:3000` locally) |
 
 ## Deploy to Vercel
 
-1. Push the repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com/new).
-3. Add all variables from `.env.example` in the Vercel project settings.
-4. Set `NEXT_PUBLIC_BASE_URL` to your production URL (e.g. `https://your-app.vercel.app`).
-5. Deploy. Vercel runs `prisma generate` via `postinstall` automatically.
+1. Import this repo in [Vercel](https://vercel.com/new).
+2. Add all variables from the table above.
+3. Set `NEXT_PUBLIC_BASE_URL` to your production URL.
+4. Deploy (`postinstall` runs `prisma generate`).
+5. Run `npx prisma migrate deploy` against production `DATABASE_URL`.
+6. Create a Stripe webhook at `https://your-app.vercel.app/api/webhook` for:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+7. Put that endpoint’s signing secret in `STRIPE_WEBHOOK_SECRET`.
 
-### Post-deploy checklist
-
-- [ ] Run `npx prisma migrate deploy` against your production database
-- [ ] Add Stripe webhook endpoint: `https://your-app.vercel.app/api/webhook`
-- [ ] Subscribe to events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-- [ ] Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET` in Vercel
-
-## User Flow
-
-```
-Landing → Sign Up → Subscribe (Stripe Checkout) → Webhook activates profile
-       → Meal Plan (AI generation) → Calendar view
-```
-
-## Project Structure
+## Project structure
 
 ```
 app/
   api/
-    checkout/          # Stripe checkout session
-    create-profile/    # Sync Clerk user to DB
-    generate-mealplan/ # AI meal plan generation
-    profile/           # User profile + subscription status
-    webhook/           # Stripe webhook handler
-  mealplan/            # Meal plan dashboard
-  profile/             # User profile page
-  subscribe/           # Pricing page
-components/            # UI components
-lib/                   # AI, Stripe, Prisma, plans
-prisma/                # Database schema + migrations
+    checkout/            # Stripe Checkout session
+    create-profile/      # Sync Clerk user → Profile
+    generate-mealplan/   # AI generation + save
+    mealplan/            # Load latest saved plan
+    profile/             # Profile + subscription status
+    webhook/             # Stripe webhooks
+  mealplan/              # Meal plan dashboard
+  profile/               # Account page
+  subscribe/             # Pricing
+  sign-in/ / sign-up/    # Clerk auth
+components/              # UI
+lib/                     # AI, Stripe, Prisma, plans
+prisma/                  # Schema + migrations
+public/brand/            # Favicon, hero, empty-state art
 ```
 
 ## License
