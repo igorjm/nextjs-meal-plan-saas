@@ -2,60 +2,63 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useUser, SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignOutButton, useUser } from "@clerk/nextjs";
 
 export default function NavBar() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, user } = useUser();
 
   if (!isLoaded) {
-    // Optionally, return a loading indicator or skeleton here
-    return null;
+    return (
+      <nav className="fixed inset-x-0 top-0 z-50 h-14 border-b border-black/[0.04] bg-white/70 backdrop-blur-xl" />
+    );
   }
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Brand / Logo */}
-        <Link href="/">
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-black/[0.04] bg-white/75 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 transition hover:opacity-70"
+        >
           <Image
-            className="text-xl font-bold text-emerald-700 cursor-pointer"
-            src="/logo.png" // Ensure this path is correct or replace with your logo path
-            width={60}
-            height={60}
-            alt="Logo"
+            src="/brand/logo-mark.svg"
+            alt=""
+            width={28}
+            height={28}
+            className="rounded-[7px]"
           />
+          <span className="font-display text-[17px] font-semibold tracking-tight text-[#1D1D1F]">
+            MealPlan AI
+          </span>
         </Link>
 
-        {/* Navigation Links */}
-        <div className="space-x-6 flex items-center">
-          {/* Authentication Buttons */}
+        <div className="flex items-center gap-1 sm:gap-2">
           <SignedIn>
             <Link
               href="/mealplan"
-              className="text-gray-700 hover:text-emerald-500 transition-colors"
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6E6E73] transition hover:bg-black/[0.04] hover:text-[#1D1D1F]"
             >
-              Mealplan
+              Meal plan
             </Link>
-            {/* Profile Picture */}
-            {user?.imageUrl ? (
-              <Link href="/profile">
+            <Link
+              href="/profile"
+              className="rounded-full p-1 transition hover:bg-black/[0.04]"
+            >
+              {user?.imageUrl ? (
                 <Image
                   src={user.imageUrl}
-                  alt="Profile Picture"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="rounded-full ring-1 ring-black/[0.08]"
                 />
-              </Link>
-            ) : (
-              // Placeholder for users without a profile picture
-              <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-            )}
-
-            {/* Sign Out Button */}
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-[#E5E5EA]" />
+              )}
+            </Link>
             <SignOutButton>
-              <button className="ml-4 px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition">
-                Sign Out
+              <button className="ml-1 rounded-full bg-[#1D1D1F] px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-black">
+                Sign out
               </button>
             </SignOutButton>
           </SignedIn>
@@ -63,22 +66,27 @@ export default function NavBar() {
           <SignedOut>
             <Link
               href="/"
-              className="text-gray-700 hover:text-emerald-500 transition-colors"
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6E6E73] transition hover:bg-black/[0.04] hover:text-[#1D1D1F]"
             >
               Home
             </Link>
             <Link
-              href={isSignedIn ? "/subscribe" : "/sign-up"}
-              className="text-gray-700 hover:text-emerald-500 transition-colors"
+              href="/subscribe"
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6E6E73] transition hover:bg-black/[0.04] hover:text-[#1D1D1F]"
             >
               Subscribe
             </Link>
-
+            <Link
+              href="/sign-in"
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium text-[#6E6E73] transition hover:bg-black/[0.04] hover:text-[#1D1D1F]"
+            >
+              Sign in
+            </Link>
             <Link
               href="/sign-up"
-              className="px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 transition"
+              className="rounded-full bg-[#1D1D1F] px-3.5 py-1.5 text-[13px] font-semibold text-white transition hover:bg-black"
             >
-              Sign Up
+              Sign up
             </Link>
           </SignedOut>
         </div>

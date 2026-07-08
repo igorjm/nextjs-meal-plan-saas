@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { SignUp } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   return (
     <div className="-mx-4 -mt-4 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-[#F5F5F7] px-4 py-12">
       <Link href="/" className="mb-8 flex items-center gap-2.5">
@@ -17,15 +17,15 @@ export default function SignUpPage() {
           MealPlan AI
         </span>
       </Link>
-      <SignUp
+      <SignIn
         appearance={{
           elements: {
             rootBox: "mx-auto",
             card: "rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.06)]",
           },
         }}
-        forceRedirectUrl="/subscribe"
-        signInUrl="/sign-in"
+        forceRedirectUrl="/mealplan"
+        signUpUrl="/sign-up"
       />
     </div>
   );
