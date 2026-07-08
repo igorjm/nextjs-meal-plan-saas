@@ -1,54 +1,105 @@
-# Full Stack AI SaaS Web App with Authentication
+# AI Meal Plan SaaS
 
-## Overview
-
-This project is a full stack AI SaaS web application built with NextJS 15, TailwindCSS, Stripe, TypeScript, and Clerk for user authentication, featuring robust user authentication, secure payment processing, and a modern responsive design.
+A full-stack SaaS demo for generating personalized weekly meal plans with AI, user authentication, and Stripe subscriptions.
 
 ## Features
 
-- **User Authentication:** Secure sign-up, sign-in, and profile management using [Clerk](https://go.clerk.com/TFWZCy5).
-- **Responsive UI:** Sleek and modern interface built with TailwindCSS.
-- **Payment Processing:** Subscription management and secure payments via Stripe.
-- **Type Safety:** Fully typed with TypeScript for improved maintainability.
-- **Scalable Architecture:** Built on NextJS 15 with serverless functions and modern best practices.
+- **Clerk authentication** — sign up, sign in, profile sync
+- **Stripe subscriptions** — weekly, monthly, and yearly plans with webhook activation
+- **AI meal plans** — OpenRouter-powered weekly plans on a calendar view
+- **Profile dashboard** — subscription status and account info
 
-## Technologies Used
+## Tech Stack
 
-- NextJS 15
-- TailwindCSS
-- Stripe
-- TypeScript
-- Clerk
-- Prisma
-- PostgreSQL
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Auth | Clerk |
+| Database | PostgreSQL + Prisma |
+| Payments | Stripe |
+| AI | OpenRouter |
+| Data fetching | TanStack React Query |
 
-## Installation
+## Local Development
 
-1. **Clone the repository:**
+1. Clone and install:
+
    ```bash
-   git clone https://github.com/yourusername/yourproject.git
-   ```
-2. **Navigate into the project directory:**
-   ```bash
-   cd yourproject
-   ```
-3. **Install dependencies:**
-   ```bash
+   git clone <your-repo-url>
+   cd nextjs-meal-plan-saas
    npm install
    ```
-4. **Configure Environment Variables:**  
-   Create a `.env.local` file in the project root and add your required variables (e.g., `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_BASE_URL`, `OPEN_ROUTER_API_KEY`, `CLERK_SECRET_KEY`, `DATABASE`, etc.).
-5. **Run the Development Server:**
+
+2. Copy environment variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. Fill in `.env.local` with keys from [Clerk](https://clerk.com), [Stripe](https://stripe.com), [OpenRouter](https://openrouter.ai), and a PostgreSQL provider ([Neon](https://neon.tech) works well).
+
+4. Run database migrations:
+
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+5. Start the dev server:
+
    ```bash
    npm run dev
    ```
 
-## Usage
+6. (Optional) Forward Stripe webhooks locally:
 
-- Visit `http://localhost:3000` to view the application.
-- Sign up or sign in using Clerk.
-- Manage your subscriptions and explore the AI-powered features.
+   ```bash
+   npm run stripe:listen
+   ```
 
-## Contributing
+Visit [http://localhost:3000](http://localhost:3000).
 
-Contributions are welcome! Please fork the repository, create a feature branch, and submit a pull request. For major changes, please open an issue first to discuss what you would like to change.
+## Deploy to Vercel
+
+1. Push the repo to GitHub.
+2. Import the project in [Vercel](https://vercel.com/new).
+3. Add all variables from `.env.example` in the Vercel project settings.
+4. Set `NEXT_PUBLIC_BASE_URL` to your production URL (e.g. `https://your-app.vercel.app`).
+5. Deploy. Vercel runs `prisma generate` via `postinstall` automatically.
+
+### Post-deploy checklist
+
+- [ ] Run `npx prisma migrate deploy` against your production database
+- [ ] Add Stripe webhook endpoint: `https://your-app.vercel.app/api/webhook`
+- [ ] Subscribe to events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+- [ ] Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET` in Vercel
+
+## User Flow
+
+```
+Landing → Sign Up → Subscribe (Stripe Checkout) → Webhook activates profile
+       → Meal Plan (AI generation) → Calendar view
+```
+
+## Project Structure
+
+```
+app/
+  api/
+    checkout/          # Stripe checkout session
+    create-profile/    # Sync Clerk user to DB
+    generate-mealplan/ # AI meal plan generation
+    profile/           # User profile + subscription status
+    webhook/           # Stripe webhook handler
+  mealplan/            # Meal plan dashboard
+  profile/             # User profile page
+  subscribe/           # Pricing page
+components/            # UI components
+lib/                   # AI, Stripe, Prisma, plans
+prisma/                # Database schema + migrations
+```
+
+## License
+
+MIT
